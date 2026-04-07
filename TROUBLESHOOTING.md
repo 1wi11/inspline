@@ -6,7 +6,7 @@
 
 기존에는 AWS 콘솔에서 직접 리소스를 생성하고 설정했으며, IaC로 인프라를 관리해본 경험은 없었다. 하지만 이번 과제에서 SAM(template.yaml)을 도입한 이유는 다음과 같다.
 
-- **재현성**: 누구든 `sam build && sam deploy` 한 번으로 동일한 환경을 구축할 수 있다
+- **재현성**: 누구든 동일한 환경을 구축할 수 있다
 - **버전 관리**: 인프라 변경 이력이 Git에 남아 롤백과 추적이 가능하다
 - **일관성**: 콘솔에서 수동으로 설정할 때 발생하는 휴먼 에러를 방지할 수 있다
 
@@ -38,6 +38,7 @@
 **문제**: AWS 콘솔에서 직접 설정하던 방식과 달리, SAM template.yaml로 리소스를 정의할 때 DynamoDB GSI 설정, Lambda 트리거 연결, IAM 정책 작성 등에서 문법 오류와 설정 누락이 반복적으로 발생
 
 **해결**:
+
 - Claude Code를 활용하여 template.yaml 작성을 진행하되, 생성된 리소스 구성과 IAM 정책을 직접 검토하고 수정
 - 각 Lambda 함수별로 필요한 최소 권한만 정의하여 IAM 정책을 명시적으로 관리
 
@@ -46,6 +47,7 @@
 **문제**: 배포 후 Lambda 실행 시 환경변수가 없어 런타임 에러 발생
 
 **해결**:
+
 - `template.yaml`의 `Globals.Function.Environment.Variables`에 모든 환경변수를 정의
 - `src/utils/envValidator.ts`를 작성하여 Lambda 실행 시작 시점에 필수 환경변수 존재 여부를 검증하도록 함
 
@@ -68,13 +70,13 @@
 
 **Claude Code** (Anthropic) 유료 플랜을 사용하여 아래 5단계로 구현을 진행했다. 각 Phase의 구현 계획은 Claude Code와 논의하며 설계했고, 코드 작성과 리팩토링에도 활용했다.
 
-| Phase | 내용 | Claude Code 활용 |
-| --- | --- | --- |
-| Phase 1 | SAM 프로젝트 초기화, POST /events Lambda, 구조화 로깅 | template.yaml 작성, 핸들러 코드 생성, 로거 유틸 작성 |
-| Phase 2 | DynamoDB 테이블 설계(Events, Notifications), 조회 API 구현 | 테이블 스키마 정의, Repository 패턴 코드 작성, GSI 설정 |
-| Phase 3 | SNS 메시지 발행, 소비 Lambda, 채널별 알림 발송 파이프라인 | SNS 연동 코드, processNotification 핸들러, 상태 갱신 로직 |
-| Phase 4 | 프로바이더/큐 추상화, 환경변수 기반 전환, 환경변수 검증 | 인터페이스 설계, 팩토리 패턴 구현, envValidator 작성 |
-| Phase 5 | AWS 배포, 통합 테스트, README 문서화 | 배포 명령어 확인, 테스트 코드 작성, README 작성 |
+| Phase   | 내용                                                       | Claude Code 활용                                          |
+| ------- | ---------------------------------------------------------- | --------------------------------------------------------- |
+| Phase 1 | SAM 프로젝트 초기화, POST /events Lambda, 구조화 로깅      | template.yaml 작성, 핸들러 코드 생성, 로거 유틸 작성      |
+| Phase 2 | DynamoDB 테이블 설계(Events, Notifications), 조회 API 구현 | 테이블 스키마 정의, Repository 패턴 코드 작성, GSI 설정   |
+| Phase 3 | SNS 메시지 발행, 소비 Lambda, 채널별 알림 발송 파이프라인  | SNS 연동 코드, processNotification 핸들러, 상태 갱신 로직 |
+| Phase 4 | 프로바이더/큐 추상화, 환경변수 기반 전환, 환경변수 검증    | 인터페이스 설계, 팩토리 패턴 구현, envValidator 작성      |
+| Phase 5 | AWS 배포, 통합 테스트, README 문서화                       | 배포 명령어 확인, 테스트 코드 작성, README 작성           |
 
 ---
 
