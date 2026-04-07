@@ -152,7 +152,7 @@ sam delete --stack-name inspline --region ap-northeast-2
 | `NOTIFICATION_WEBHOOK_PROVIDER` | Webhook 프로바이더 (`mock`)          | `mock`                        |
 | `WEBHOOK_URL`                   | Webhook 발송 대상 URL                | `https://example.com/webhook` |
 
-> 환경변수 변경 후 `sam build && sam deploy`로 재배포하면 코드 수정 없이 프로바이더를 전환할 수 있습니다.
+> 환경변수 변경 후 `sam build && sam deploy --stack-name inspline --resolve-s3 --capabilities CAPABILITY_IAM --region ap-northeast-2`로 재배포하면 코드 수정 없이 프로바이더를 전환할 수 있습니다.
 
 ## API 사용 예시
 
