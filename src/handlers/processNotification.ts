@@ -21,9 +21,9 @@ export const handler = async (event: SNSEvent): Promise<void> => {
     const message: NotificationMessage = JSON.parse(record.Sns.Message);
     const { event_id, event_type, channel } = message;
     const startTime = Date.now();
+    const provider = getProvider(channel);
 
     try {
-      const provider = getProvider(channel);
       const result = await provider.send({ event_id, event_type, channel });
 
       await updateNotificationStatus(
@@ -44,11 +44,13 @@ export const handler = async (event: SNSEvent): Promise<void> => {
         duration_ms: Date.now() - startTime,
       });
     } catch (error) {
+      const providerName = `failed-${channel}`;
+
       await updateNotificationStatus(
         event_id,
         channel,
         "failed",
-        "unknown",
+        providerName,
         null,
       );
 
@@ -56,7 +58,7 @@ export const handler = async (event: SNSEvent): Promise<void> => {
         event_id,
         event_type,
         channel,
-        provider: "unknown",
+        provider: providerName,
         status: "failed",
         duration_ms: Date.now() - startTime,
         error: (error as Error).message,

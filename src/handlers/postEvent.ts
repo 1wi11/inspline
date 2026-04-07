@@ -5,7 +5,7 @@ import { log } from "../utils/logger";
 import { errorResponse } from "../utils/response";
 import { validatePostEventEnv } from "../utils/envValidator";
 import { saveEvent, saveNotifications } from "../db/eventRepository";
-import { publishNotificationMessages } from "../queue/snsPublisher";
+import { publishNotificationMessages } from "../queue/messagePublisher";
 
 validatePostEventEnv();
 

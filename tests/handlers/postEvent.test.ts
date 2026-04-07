@@ -1,10 +1,10 @@
 import { handler } from '../../src/handlers/postEvent';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import * as eventRepository from '../../src/db/eventRepository';
-import * as snsPublisher from '../../src/queue/snsPublisher';
+import * as snsPublisher from '../../src/queue/messagePublisher';
 
 jest.mock('../../src/db/eventRepository');
-jest.mock('../../src/queue/snsPublisher');
+jest.mock('../../src/queue/messagePublisher');
 
 const mockedRepo = eventRepository as jest.Mocked<typeof eventRepository>;
 const mockedSns = snsPublisher as jest.Mocked<typeof snsPublisher>;
