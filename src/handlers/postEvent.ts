@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { validateEventRequest } from '../validators/eventValidator';
 import { log } from '../utils/logger';
 import { saveEvent, saveNotifications } from '../db/eventRepository';
+import { publishNotificationMessages } from '../queue/snsPublisher';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   let body: unknown;
@@ -47,6 +48,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   });
 
   await saveNotifications(eventId, data.channels, createdAt);
+
+  await publishNotificationMessages(eventId, data.event_type, data.channels);
 
   return {
     statusCode: 201,

@@ -13,6 +13,7 @@ Globals:
       Variables:
         EVENTS_TABLE_NAME: !Ref EventsTable
         NOTIFICATIONS_TABLE_NAME: !Ref NotificationsTable
+        TOPIC_ARN: !Ref NotificationTopic
         NODE_OPTIONS: --enable-source-maps
 
 Resources:
@@ -33,6 +34,9 @@ Resources:
             TableName: !Ref EventsTable
         - DynamoDBCrudPolicy:
             TableName: !Ref NotificationsTable
+        - SNSPublishMessagePolicy:
+            TopicArn: !Ref NotificationTopic
+            TopicName: !GetAtt NotificationTopic.TopicName
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -41,6 +45,31 @@ Resources:
         Sourcemap: true
         EntryPoints:
           - src/handlers/postEvent.ts
+
+  # --- Consumer ---
+  ProcessNotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/processNotification.handler
+      CodeUri: ./
+      Events:
+        SNSTrigger:
+          Type: SNS
+          Properties:
+            Topic: !Ref NotificationTopic
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NotificationsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: es2022
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/processNotification.ts
 
   GetEventFunction:
     Type: AWS::Serverless::Function
@@ -131,6 +160,12 @@ Resources:
           KeyType: HASH
         - AttributeName: channel
           KeyType: RANGE
+
+  # --- Messaging ---
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: inspline-notifications
 
 Outputs:
   ApiUrl:

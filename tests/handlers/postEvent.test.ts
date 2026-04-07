@@ -1,10 +1,13 @@
 import { handler } from '../../src/handlers/postEvent';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import * as eventRepository from '../../src/db/eventRepository';
+import * as snsPublisher from '../../src/queue/snsPublisher';
 
 jest.mock('../../src/db/eventRepository');
+jest.mock('../../src/queue/snsPublisher');
 
 const mockedRepo = eventRepository as jest.Mocked<typeof eventRepository>;
+const mockedSns = snsPublisher as jest.Mocked<typeof snsPublisher>;
 
 function makeEvent(body: unknown): APIGatewayProxyEvent {
   return {
@@ -34,6 +37,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockedRepo.saveEvent.mockResolvedValue();
   mockedRepo.saveNotifications.mockResolvedValue();
+  mockedSns.publishNotificationMessages.mockResolvedValue();
 });
 
 describe('POST /events handler', () => {

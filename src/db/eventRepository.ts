@@ -1,4 +1,4 @@
-import { PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient } from './client';
 import { EventRecord, NotificationRecord, Channel } from '../types/event';
 
@@ -62,6 +62,43 @@ export async function getNotificationsByEventId(
     })
   );
   return (result.Items as NotificationRecord[]) ?? [];
+}
+
+export async function updateNotificationStatus(
+  eventId: string,
+  channel: string,
+  status: string,
+  provider: string,
+  sentAt: string | null
+): Promise<void> {
+  await docClient.send(
+    new UpdateCommand({
+      TableName: NOTIFICATIONS_TABLE,
+      Key: { event_id: eventId, channel },
+      UpdateExpression: 'SET #s = :s, provider = :p, sent_at = :sa',
+      ExpressionAttributeNames: { '#s': 'status' },
+      ExpressionAttributeValues: {
+        ':s': status,
+        ':p': provider,
+        ':sa': sentAt,
+      },
+    })
+  );
+}
+
+export async function updateEventStatus(
+  eventId: string,
+  status: string
+): Promise<void> {
+  await docClient.send(
+    new UpdateCommand({
+      TableName: EVENTS_TABLE,
+      Key: { event_id: eventId },
+      UpdateExpression: 'SET #s = :s',
+      ExpressionAttributeNames: { '#s': 'status' },
+      ExpressionAttributeValues: { ':s': status },
+    })
+  );
 }
 
 export async function listEventsByClinic(
