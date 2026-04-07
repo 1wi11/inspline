@@ -15,3 +15,22 @@ export interface EventRequest {
   patient_id: string;
   channels: Channel[];
 }
+
+export interface EventRecord {
+  event_id: string;
+  event_type: EventType;
+  clinic_id: string;
+  patient_id: string;
+  channels: Channel[];
+  status: string;
+  created_at: string;
+}
+
+export interface NotificationRecord {
+  event_id: string;
+  channel: Channel;
+  provider: string;
+  status: string;
+  sent_at: string | null;
+  created_at: string;
+}

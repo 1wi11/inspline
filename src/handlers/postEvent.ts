@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { randomUUID } from 'crypto';
 import { validateEventRequest } from '../validators/eventValidator';
 import { log } from '../utils/logger';
+import { saveEvent, saveNotifications } from '../db/eventRepository';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   let body: unknown;
@@ -24,6 +25,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
   const { data } = validation;
   const eventId = `evt-${randomUUID()}`;
+  const createdAt = new Date().toISOString();
 
   log({
     event_id: eventId,
@@ -33,6 +35,18 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     status: 'received',
     duration_ms: 0,
   });
+
+  await saveEvent({
+    event_id: eventId,
+    event_type: data.event_type,
+    clinic_id: data.clinic_id,
+    patient_id: data.patient_id,
+    channels: data.channels,
+    status: 'pending',
+    created_at: createdAt,
+  });
+
+  await saveNotifications(eventId, data.channels, createdAt);
 
   return {
     statusCode: 201,

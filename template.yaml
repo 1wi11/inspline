@@ -11,7 +11,8 @@ Globals:
       - x86_64
     Environment:
       Variables:
-        TABLE_NAME: !Ref EventsTable
+        EVENTS_TABLE_NAME: !Ref EventsTable
+        NOTIFICATIONS_TABLE_NAME: !Ref NotificationsTable
         NODE_OPTIONS: --enable-source-maps
 
 Resources:
@@ -30,6 +31,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref EventsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NotificationsTable
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -38,6 +41,54 @@ Resources:
         Sourcemap: true
         EntryPoints:
           - src/handlers/postEvent.ts
+
+  GetEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/getEvent.handler
+      CodeUri: ./
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /events/{event_id}
+            Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NotificationsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: es2022
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/getEvent.ts
+
+  ListEventsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/listEvents.handler
+      CodeUri: ./
+      Events:
+        ListEvents:
+          Type: Api
+          Properties:
+            Path: /events
+            Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: es2022
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/listEvents.ts
 
   # --- Database ---
   EventsTable:
@@ -64,6 +115,22 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+
+  NotificationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: inspline-notifications
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: event_id
+          AttributeType: S
+        - AttributeName: channel
+          AttributeType: S
+      KeySchema:
+        - AttributeName: event_id
+          KeyType: HASH
+        - AttributeName: channel
+          KeyType: RANGE
 
 Outputs:
   ApiUrl:
