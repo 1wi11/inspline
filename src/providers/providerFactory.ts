@@ -4,7 +4,7 @@ import { MockEmailProviderV2 } from "./mockEmailProviderV2";
 import { MockSmsProvider } from "./mockSmsProvider";
 import { MockSmsProviderV2 } from "./mockSmsProviderV2";
 import { MockWebhookProvider } from "./mockWebhookProvider";
-import { MockWebhookProviderV2 } from "./mockWebhookProviderV2";
+
 
 const PROVIDER_MAP: Record<
   string,
@@ -20,7 +20,6 @@ const PROVIDER_MAP: Record<
   },
   webhook: {
     mock: () => new MockWebhookProvider(process.env.WEBHOOK_URL ?? ""),
-    mock2: () => new MockWebhookProviderV2(process.env.WEBHOOK_URL ?? ""),
   },
 };
 
