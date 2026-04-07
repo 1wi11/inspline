@@ -1,6 +1,11 @@
-import { PutCommand, GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { docClient } from './client';
-import { EventRecord, NotificationRecord, Channel } from '../types/event';
+import {
+  PutCommand,
+  GetCommand,
+  QueryCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { docClient } from "./client";
+import { EventRecord, NotificationRecord, Channel } from "../types/event";
 
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME!;
 const NOTIFICATIONS_TABLE = process.env.NOTIFICATIONS_TABLE_NAME!;
@@ -10,33 +15,35 @@ export async function saveEvent(event: EventRecord): Promise<void> {
     new PutCommand({
       TableName: EVENTS_TABLE,
       Item: event,
-    })
+    }),
   );
 }
 
-export async function saveNotification(notification: NotificationRecord): Promise<void> {
+export async function saveNotification(
+  notification: NotificationRecord,
+): Promise<void> {
   await docClient.send(
     new PutCommand({
       TableName: NOTIFICATIONS_TABLE,
       Item: notification,
-    })
+    }),
   );
 }
 
 export async function saveNotifications(
   eventId: string,
   channels: Channel[],
-  createdAt: string
+  createdAt: string,
 ): Promise<void> {
   const promises = channels.map((channel) =>
     saveNotification({
       event_id: eventId,
       channel,
-      provider: '',
-      status: 'pending',
+      provider: "",
+      status: "pending",
       sent_at: null,
       created_at: createdAt,
-    })
+    }),
   );
   await Promise.all(promises);
 }
@@ -46,20 +53,21 @@ export async function getEvent(eventId: string): Promise<EventRecord | null> {
     new GetCommand({
       TableName: EVENTS_TABLE,
       Key: { event_id: eventId },
-    })
+    }),
   );
   return (result.Item as EventRecord) ?? null;
 }
 
 export async function getNotificationsByEventId(
-  eventId: string
+  eventId: string,
 ): Promise<NotificationRecord[]> {
   const result = await docClient.send(
     new QueryCommand({
       TableName: NOTIFICATIONS_TABLE,
-      KeyConditionExpression: 'event_id = :eid',
-      ExpressionAttributeValues: { ':eid': eventId },
-    })
+      KeyConditionExpression: "event_id = :eid",
+      ExpressionAttributeValues: { ":eid": eventId },
+      ConsistentRead: true,
+    }),
   );
   return (result.Items as NotificationRecord[]) ?? [];
 }
@@ -69,41 +77,41 @@ export async function updateNotificationStatus(
   channel: string,
   status: string,
   provider: string,
-  sentAt: string | null
+  sentAt: string | null,
 ): Promise<void> {
   await docClient.send(
     new UpdateCommand({
       TableName: NOTIFICATIONS_TABLE,
       Key: { event_id: eventId, channel },
-      UpdateExpression: 'SET #s = :s, provider = :p, sent_at = :sa',
-      ExpressionAttributeNames: { '#s': 'status' },
+      UpdateExpression: "SET #s = :s, provider = :p, sent_at = :sa",
+      ExpressionAttributeNames: { "#s": "status" },
       ExpressionAttributeValues: {
-        ':s': status,
-        ':p': provider,
-        ':sa': sentAt,
+        ":s": status,
+        ":p": provider,
+        ":sa": sentAt,
       },
-    })
+    }),
   );
 }
 
 export async function updateEventStatus(
   eventId: string,
-  status: string
+  status: string,
 ): Promise<void> {
   await docClient.send(
     new UpdateCommand({
       TableName: EVENTS_TABLE,
       Key: { event_id: eventId },
-      UpdateExpression: 'SET #s = :s',
-      ExpressionAttributeNames: { '#s': 'status' },
-      ExpressionAttributeValues: { ':s': status },
-    })
+      UpdateExpression: "SET #s = :s",
+      ExpressionAttributeNames: { "#s": "status" },
+      ExpressionAttributeValues: { ":s": status },
+    }),
   );
 }
 
 export async function listEventsByClinic(
   clinicId: string,
-  status?: string
+  status?: string,
 ): Promise<EventRecord[]> {
   const params: {
     TableName: string;
@@ -112,15 +120,17 @@ export async function listEventsByClinic(
     ExpressionAttributeValues: Record<string, string>;
   } = {
     TableName: EVENTS_TABLE,
-    IndexName: 'clinic_id-status-index',
-    KeyConditionExpression: 'clinic_id = :cid',
-    ExpressionAttributeValues: { ':cid': clinicId },
+    IndexName: "clinic_id-status-index",
+    KeyConditionExpression: "clinic_id = :cid",
+    ExpressionAttributeValues: { ":cid": clinicId },
   };
 
   if (status) {
-    params.KeyConditionExpression += ' AND #s = :s';
-    (params as Record<string, unknown>).ExpressionAttributeNames = { '#s': 'status' };
-    params.ExpressionAttributeValues[':s'] = status;
+    params.KeyConditionExpression += " AND #s = :s";
+    (params as Record<string, unknown>).ExpressionAttributeNames = {
+      "#s": "status",
+    };
+    params.ExpressionAttributeValues[":s"] = status;
   }
 
   const result = await docClient.send(new QueryCommand(params));

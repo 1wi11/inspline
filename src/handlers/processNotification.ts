@@ -1,10 +1,10 @@
-import { SNSEvent } from 'aws-lambda';
-import { log } from '../utils/logger';
+import { SNSEvent } from "aws-lambda";
+import { log } from "../utils/logger";
 import {
   updateNotificationStatus,
   updateEventStatus,
   getNotificationsByEventId,
-} from '../db/eventRepository';
+} from "../db/eventRepository";
 
 interface NotificationMessage {
   event_id: string;
@@ -24,23 +24,32 @@ export const handler = async (event: SNSEvent): Promise<void> => {
     const startTime = Date.now();
 
     try {
+      // Notification 상태 업데이트
+      await updateNotificationStatus(
+        event_id,
+        channel,
+        "sent",
+        provider,
+        new Date().toISOString(),
+      );
+
       // Mock 알림 발송
       log({
         event_id,
         event_type,
         channel,
         provider,
-        status: '발송완료',
+        status: "sent",
+        message: "발송 완료",
         duration_ms: Date.now() - startTime,
       });
-
-      // Notification 상태 업데이트
+    } catch (error) {
       await updateNotificationStatus(
         event_id,
         channel,
-        'sent',
+        "failed",
         provider,
-        new Date().toISOString()
+        null,
       );
 
       log({
@@ -48,18 +57,7 @@ export const handler = async (event: SNSEvent): Promise<void> => {
         event_type,
         channel,
         provider,
-        status: 'sent',
-        duration_ms: Date.now() - startTime,
-      });
-    } catch (error) {
-      await updateNotificationStatus(event_id, channel, 'failed', provider, null);
-
-      log({
-        event_id,
-        event_type,
-        channel,
-        provider,
-        status: 'failed',
+        status: "failed",
         duration_ms: Date.now() - startTime,
         error: (error as Error).message,
       });
@@ -67,11 +65,11 @@ export const handler = async (event: SNSEvent): Promise<void> => {
 
     // 모든 채널 처리 완료 여부 확인 → Events 상태 갱신
     const notifications = await getNotificationsByEventId(event_id);
-    const allDone = notifications.every((n) => n.status !== 'pending');
+    const allDone = notifications.every((n) => n.status !== "pending");
 
     if (allDone) {
-      const hasFailed = notifications.some((n) => n.status === 'failed');
-      const newStatus = hasFailed ? 'partial_failure' : 'sent';
+      const hasFailed = notifications.some((n) => n.status === "failed");
+      const newStatus = hasFailed ? "partial_failure" : "completed";
       await updateEventStatus(event_id, newStatus);
     }
   }
