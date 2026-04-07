@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { getEvent, getNotificationsByEventId } from "../db/eventRepository";
-import { errorResponse } from "../utils/response";
+import { errorResponse, ok } from "../utils/response";
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -15,11 +15,8 @@ export const handler = async (
 
   const notifications = await getNotificationsByEventId(eventId);
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      ...eventRecord,
-      notifications,
-    }),
-  };
+  return ok({
+    ...eventRecord,
+    notifications,
+  });
 };

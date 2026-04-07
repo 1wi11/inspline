@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { randomUUID } from "crypto";
 import { validateEventRequest } from "../validators/eventValidator";
 import { log } from "../utils/logger";
-import { errorResponse } from "../utils/response";
+import { errorResponse, response } from "../utils/response";
 import { validatePostEventEnv } from "../utils/envValidator";
 import { saveEvent, saveNotifications } from "../db/eventRepository";
 import { publishNotificationMessages } from "../queue/messagePublisher";
@@ -43,11 +43,8 @@ export const handler = async (
   // 메시지 큐로 발행
   await publishNotificationMessages(eventId, data.event_type, data.channels);
 
-  return {
-    statusCode: 201,
-    body: JSON.stringify({
-      event_id: eventId,
-      status: "queued",
-    }),
-  };
+  return response(201, {
+    event_id: eventId,
+    status: "queued",
+  });
 };
