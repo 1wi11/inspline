@@ -1,0 +1,25 @@
+{
+  "name": "inspline",
+  "version": "1.0.0",
+  "description": "InSpline 서버리스 이벤트 기반 알림 파이프라인",
+  "scripts": {
+    "build": "sam build",
+    "start": "sam local start-api",
+    "invoke": "sam local invoke",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.700.0",
+    "@aws-sdk/client-sns": "^3.700.0",
+    "@aws-sdk/lib-dynamodb": "^3.700.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.17.0",
+    "esbuild": "^0.24.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
+    "typescript": "^5.7.0"
+  }
+}

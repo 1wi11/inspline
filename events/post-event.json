@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "path": "/events",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"event_type\":\"appointment_confirmed\",\"clinic_id\":\"clinic-001\",\"patient_id\":\"patient-001\",\"channels\":[\"email\",\"sms\"]}"
+}

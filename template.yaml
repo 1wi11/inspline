@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: InSpline - Serverless Event-driven Notification Pipeline
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 128
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref EventsTable
+        NODE_OPTIONS: --enable-source-maps
+
+Resources:
+  # --- API ---
+  PostEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/postEvent.handler
+      CodeUri: ./
+      Events:
+        PostEvent:
+          Type: Api
+          Properties:
+            Path: /events
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: es2022
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/postEvent.ts
+
+  # --- Database ---
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: inspline-events
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: event_id
+          AttributeType: S
+        - AttributeName: clinic_id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: event_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: clinic_id-status-index
+          KeySchema:
+            - AttributeName: clinic_id
+              KeyType: HASH
+            - AttributeName: status
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/
