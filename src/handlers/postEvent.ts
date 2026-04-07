@@ -3,8 +3,11 @@ import { randomUUID } from "crypto";
 import { validateEventRequest } from "../validators/eventValidator";
 import { log } from "../utils/logger";
 import { errorResponse } from "../utils/response";
+import { validatePostEventEnv } from "../utils/envValidator";
 import { saveEvent, saveNotifications } from "../db/eventRepository";
 import { publishNotificationMessages } from "../queue/snsPublisher";
+
+validatePostEventEnv();
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -37,7 +40,7 @@ export const handler = async (
   await saveEvent(eventRecord);
   // 채널별 알림 레코드 저장 (상태 추적용)
   await saveNotifications(eventId, data.channels, createdAt);
-  // SNS로 메시지 발생
+  // 메시지 큐로 발행
   await publishNotificationMessages(eventId, data.event_type, data.channels);
 
   return {

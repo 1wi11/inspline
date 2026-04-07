@@ -1,25 +1,18 @@
-import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
-import { Channel } from '../types/event';
-
-const snsClient = new SNSClient({});
-const TOPIC_ARN = process.env.TOPIC_ARN!;
+import { Channel } from "../types/event";
+import { getQueue } from "./queueFactory";
 
 export async function publishNotificationMessages(
   eventId: string,
   eventType: string,
-  channels: Channel[]
+  channels: Channel[],
 ): Promise<void> {
+  const queue = getQueue();
   const promises = channels.map((channel) =>
-    snsClient.send(
-      new PublishCommand({
-        TopicArn: TOPIC_ARN,
-        Message: JSON.stringify({
-          event_id: eventId,
-          event_type: eventType,
-          channel,
-        }),
-      })
-    )
+    queue.publish({
+      event_id: eventId,
+      event_type: eventType,
+      channel,
+    }),
   );
   await Promise.all(promises);
 }

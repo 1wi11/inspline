@@ -43,11 +43,13 @@
 
 - Lambda 시작 시점에 필수 환경변수 존재 여부 확인
 - 필수 환경변수 목록:
-  - `TABLE_NAME`
-  - `MESSAGE_QUEUE_PROVIDER`
-  - `TOPIC_ARN` 또는 `QUEUE_URL` (선택된 큐에 따라)
-  - `NOTIFICATION_EMAIL_PROVIDER`
-  - `NOTIFICATION_SMS_PROVIDER`
+  - `EVENTS_TABLE_NAME`
+  - `NOTIFICATIONS_TABLE_NAME`
+  - `MESSAGE_QUEUE_PROVIDER` → `"sns"` | `"sqs"`
+  - `TOPIC_ARN` (SNS 선택 시 필수)
+  - `QUEUE_URL` (SQS 선택 시 필수)
+  - `NOTIFICATION_EMAIL_PROVIDER` → `"mock"` | `"ses"` 등
+  - `NOTIFICATION_SMS_PROVIDER` → `"mock"` | `"sns-sms"` 등
   - `WEBHOOK_URL`
 - 누락 시:
   - 에러 로그 출력 (어떤 변수가 누락인지 명시)

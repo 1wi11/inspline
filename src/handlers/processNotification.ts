@@ -1,5 +1,7 @@
 import { SNSEvent } from "aws-lambda";
 import { log } from "../utils/logger";
+import { validateProcessNotificationEnv } from "../utils/envValidator";
+import { getProvider } from "../providers/providerFactory";
 import {
   updateNotificationStatus,
   updateEventStatus,
@@ -12,33 +14,31 @@ interface NotificationMessage {
   channel: string;
 }
 
-function getProviderName(channel: string): string {
-  return `mock-${channel}`;
-}
+validateProcessNotificationEnv();
 
 export const handler = async (event: SNSEvent): Promise<void> => {
   for (const record of event.Records) {
     const message: NotificationMessage = JSON.parse(record.Sns.Message);
     const { event_id, event_type, channel } = message;
-    const provider = getProviderName(channel);
     const startTime = Date.now();
 
     try {
-      // Notification 상태 업데이트
+      const provider = getProvider(channel);
+      const result = await provider.send({ event_id, event_type, channel });
+
       await updateNotificationStatus(
         event_id,
         channel,
         "sent",
-        provider,
-        new Date().toISOString(),
+        result.provider,
+        result.sent_at,
       );
 
-      // Mock 알림 발송
       log({
         event_id,
         event_type,
         channel,
-        provider,
+        provider: result.provider,
         status: "sent",
         message: "발송 완료",
         duration_ms: Date.now() - startTime,
@@ -48,7 +48,7 @@ export const handler = async (event: SNSEvent): Promise<void> => {
         event_id,
         channel,
         "failed",
-        provider,
+        "unknown",
         null,
       );
 
@@ -56,7 +56,7 @@ export const handler = async (event: SNSEvent): Promise<void> => {
         event_id,
         event_type,
         channel,
-        provider,
+        provider: "unknown",
         status: "failed",
         duration_ms: Date.now() - startTime,
         error: (error as Error).message,
