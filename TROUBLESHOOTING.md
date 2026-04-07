@@ -78,6 +78,24 @@
 
 ---
 
+## 본인 검토 및 수정 부분
+
+AI가 생성한 코드를 그대로 사용하지 않고, 아래 항목들을 직접 검토하고 수정했다.
+
+### 리팩토링
+
+- **핸들러 코드 정리** (`refactor: 핸들러 코드 정리 및 안정성 개선`): 4개 핸들러와 Repository 코드에서 중복된 응답 처리 로직을 `response.ts` 유틸로 통일하고, 코드 가독성을 개선
+- **코드 개선 및 테스트 보강** (`refactor: 코드 개선 및 필수 테스트 추가`): `snsPublisher.ts`를 `messagePublisher.ts`로 리네이밍하여 큐 추상화와 일관되게 정리. providerFactory, queueFactory, envValidator, eventRepository에 대한 테스트 추가
+
+### 직접 수정
+
+- **CORS 설정**: API Gateway와 Lambda 응답 양쪽에 CORS 헤더가 필요하다는 것을 확인하고, template.yaml과 response.ts 모두 수정
+- **불필요한 프로바이더 제거**: webhook mock2 프로바이더가 실제로 불필요하다고 판단하여 삭제
+- **IAM 정책 검토**: AI가 생성한 template.yaml의 Lambda 권한 정책이 과도하지 않은지 확인하고, 함수별 최소 권한으로 조정
+- **테스트 환경 설정**: Phase 4에서 환경변수 의존 테스트가 실패하여 `tests/setup.ts`와 `jest.config.js`를 직접 수정
+
+---
+
 ## 오류 또는 제약 조건
 
 ### 1. 알림 프로바이더가 Mock 구현
