@@ -1,17 +1,26 @@
 import { NotificationProvider } from "./types";
 import { MockEmailProvider } from "./mockEmailProvider";
+import { MockEmailProviderV2 } from "./mockEmailProviderV2";
 import { MockSmsProvider } from "./mockSmsProvider";
+import { MockSmsProviderV2 } from "./mockSmsProviderV2";
 import { MockWebhookProvider } from "./mockWebhookProvider";
+import { MockWebhookProviderV2 } from "./mockWebhookProviderV2";
 
-const PROVIDER_MAP: Record<string, Record<string, () => NotificationProvider>> = {
+const PROVIDER_MAP: Record<
+  string,
+  Record<string, () => NotificationProvider>
+> = {
   email: {
     mock: () => new MockEmailProvider(),
+    mock2: () => new MockEmailProviderV2(),
   },
   sms: {
     mock: () => new MockSmsProvider(),
+    mock2: () => new MockSmsProviderV2(),
   },
   webhook: {
     mock: () => new MockWebhookProvider(process.env.WEBHOOK_URL ?? ""),
+    mock2: () => new MockWebhookProviderV2(process.env.WEBHOOK_URL ?? ""),
   },
 };
 
@@ -26,7 +35,9 @@ export function getProvider(channel: string): NotificationProvider {
 
   const factory = channelProviders[providerName];
   if (!factory) {
-    throw new Error(`Unknown provider "${providerName}" for channel "${channel}"`);
+    throw new Error(
+      `Unknown provider "${providerName}" for channel "${channel}"`,
+    );
   }
 
   return factory();
