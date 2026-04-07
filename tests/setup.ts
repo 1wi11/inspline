@@ -1,0 +1,9 @@
+process.env.EVENTS_TABLE_NAME = "test-events";
+process.env.NOTIFICATIONS_TABLE_NAME = "test-notifications";
+process.env.TOPIC_ARN = "arn:aws:sns:ap-northeast-2:000000000000:test-topic";
+process.env.QUEUE_URL = "https://sqs.ap-northeast-2.amazonaws.com/000000000000/test-queue";
+process.env.MESSAGE_QUEUE_PROVIDER = "sns";
+process.env.NOTIFICATION_EMAIL_PROVIDER = "mock";
+process.env.NOTIFICATION_SMS_PROVIDER = "mock";
+process.env.NOTIFICATION_WEBHOOK_PROVIDER = "mock";
+process.env.WEBHOOK_URL = "https://example.com/webhook";

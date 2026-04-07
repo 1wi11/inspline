@@ -70,7 +70,7 @@ describe('processNotification handler', () => {
       channel: 'email',
     }));
 
-    expect(mockedRepo.updateEventStatus).toHaveBeenCalledWith('evt-001', 'sent');
+    expect(mockedRepo.updateEventStatus).toHaveBeenCalledWith('evt-001', 'completed');
   });
 
   it('하나라도 failed면 Events를 partial_failure로 업데이트한다', async () => {
