@@ -4,6 +4,18 @@
 
 InSpline 치과 보험 청구 시스템의 이벤트(예약 확인, 보험 승인, 청구 완료)를 수신하여 이메일/SMS/Webhook으로 알림을 발송하는 서버리스 파이프라인입니다.
 
+## 아키텍처
+
+![InSpline Architecture](architecture.webp)
+
+## 데모
+
+| 항목           | 값                                         |
+| -------------- | ------------------------------------------ |
+| 프론트엔드 URL | https://main.d9dei3gqird1y.amplifyapp.com/ |
+| ID             | inspline                                   |
+| PW             | inspline                                   |
+
 ## 사전 준비
 
 ### 1. Node.js 설치
@@ -326,3 +338,4 @@ inspline/
 
 - **Clinics 테이블 추가**: 현재는 `clinic_id`를 직접 입력해야 하지만, 별도 Clinics 테이블을 두면 클리닉 목록 조회 API를 제공하여 사용자가 목록에서 선택할 수 있다
 - **실제 프로바이더 연동**: `NotificationProvider` 인터페이스를 구현하는 새 클래스(예: `SesEmailProvider`, `TwilioSmsProvider`)를 추가하고 팩토리에 등록하면 코드 변경 없이 환경변수만으로 전환 가능
+- **SNS -> SQS Fan-out 패턴**: 채널별 SQS 큐를 두어 독립적인 재처리와 속도 조절이 가능하도록 확장 가능
